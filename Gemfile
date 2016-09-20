@@ -14,7 +14,6 @@ group :unit_tests do
   else
     gem 'json_pure',                                                :require => false
   end
-  end
   gem 'puppet-lint-absolute_classname-check',                       :require => false
   gem 'puppet-lint-appends-check',                                  :require => false
   gem 'puppet-lint-empty_string-check',                             :require => false
