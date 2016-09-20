@@ -25,13 +25,3 @@ matrix:
     env: PUPPET_GEM_VERSION="~> 4.1"
   - rvm: 2.1.0
     env: PUPPET_GEM_VERSION="~> 4.2"
-notifications:
-  email: false
-  hipchat:
-    rooms:
-      - secure: CK11caPkzorkB4onwQPDolAFM32RO+Mn/rt3MRBe0xkt+SyRj8Icmv4MLbWUhiIydZQLrZpC+k993U9RuNOgghOcBq9tKF3U1sM6rrWLNJOnvobi6S+WZYe325IcsMchREERd0TUJYeYWCw2YxYlJBS/xRmpXO5gLZAPzm1NI9k=
-    template:
-      - '%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message} (<a href="%{build_url}">Details</a>/<a href="%{compare_url}">Change view</a>)'
-    format: html
-  on_success: always
-  on_failure: always
