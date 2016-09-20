@@ -9,7 +9,7 @@ group :unit_tests do
   gem 'puppet-syntax',                                              :require => false
   gem 'metadata-json-lint',                                         :require => false
   gem 'json',                                                       :require => false
-  if jasonpureversion = ENV['JASON_PURE_GEM_VERSION']
+  if jasonpureversion = ENV['JSON_PURE_GEM_VERSION']
     gem 'json_pure', jasonpureversion,                              :require => false
   else
     gem 'json_pure',                                                :require => false
