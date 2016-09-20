@@ -12,11 +12,8 @@ group :unit_tests do
   if jasonpureversion = ENV['JASON_PURE_GEM_VERSION']
     gem 'json_pure', jasonpureversion,                              :require => false
   else
-<<<<<<< HEAD
     gem 'json_pure',                                                :require => false
-=======
-    gem 'json_pure'                                                 :require => false
->>>>>>> 084795aa78ee75844a7c5816890f21a21b96a815
+  end
   end
   gem 'puppet-lint-absolute_classname-check',                       :require => false
   gem 'puppet-lint-appends-check',                                  :require => false
