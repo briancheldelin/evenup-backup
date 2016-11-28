@@ -134,9 +134,9 @@ define backup::job (
     fail("[Backup::Job::${name}]: Utility paths need to be a hash: {'utility_name' => 'path'}")
   }
 
-  if !member(['archive', 'mongodb', 'mysql', 'riak', 'redis', 'syncer'], $_types) {
+  if !member(['archive', 'mongodb', 'mysql', 'riak', 'redis', 'postgresql', 'syncer'], $_types) {
     $__types = join($_types, ', ')
-    fail("[Backup::Job::${name}]: Invalid types in '${__types}'.  Supported types are archive, mongodb, mysql, riak, redis, and syncer")
+    fail("[Backup::Job::${name}]: Invalid types in '${__types}'.  Supported types are archive, mongodb, mysql, postgresql, riak, redis, and syncer")
   }
 
   # Validate archive specific things
@@ -153,9 +153,12 @@ define backup::job (
   } # Archive
 
   # Validate database specific things
-  if !empty(intersection($_types, ['mongodb', 'mysql'])) {
+  if !empty(intersection($_types, ['mongodb', 'mysql', 'postgresql'])) {
     if $port and !is_integer($port) {
       fail("[Backup::Job::${name}]: Invalid port (${port})")
+    }
+    if $dbname != undef and !is_string($dbname){
+      fail("[Backup::job::${name}]: Invalid dbname parameter, must be a string")
     }
   }
 
@@ -176,10 +179,10 @@ define backup::job (
     validate_bool($lock)
   }
 
-  # MySQL
-  if member($_types, 'mysql') {
+  # MySQL & PostreSQL
+  if !empty(intersection($_types, ['mysql', 'postgresql'])) {
     if $skip_tables and (!is_string($skip_tables) and !is_array($skip_tables)) {
-      fail("[Backup::Job::${name}]: Tables to skip in backup for MySQL must be a string or array if defined")
+      fail("[Backup::Job::${name}]: Tables to skip in backup for MySQL & PostreSQL must be a string or array if defined")
     }
   }
 
@@ -475,6 +478,19 @@ define backup::job (
       target  => "/etc/backup/models/${_name}.rb",
       content => template('backup/job/mysql.erb'),
       order   => '13',
+    }
+  }
+  if member($_types, 'postgresql') {
+    # Template uses
+    # - $dbname
+    # - $username
+    # - $password
+    # - $port
+    # - $skip_tables
+    concat::fragment { "${_name}_postgresql":
+      target  => "/etc/backup/models/${_name}.rb",
+      content => template('backup/job/postgresql.erb'),
+      order   => '14',
     }
   }
 
