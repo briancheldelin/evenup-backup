@@ -156,9 +156,40 @@ describe 'backup::job', :types=> :define do
           :storage_type   => 'local',
           :path           => '/backups'
         } }
-        it { expect { is_expected.to compile }.to raise_error(/Tables to skip in backup for MySQL must be a string or array if defined/) }
+        it { expect { is_expected.to compile }.to raise_error(/Tables to skip in backup for MySQL & PostreSQL must be a string or array if defined/) }
       end
     end # mysql
+
+    context 'postgresql' do
+      context 'with minimal settings' do
+        let(:params) { {
+          :types        => 'postgresql',
+          :dbname       => 'test',
+          :storage_type => 'local',
+          :path         => '/backups',
+        } }
+        it { is_expected.to compile  }
+      end
+      context 'with bad dbname' do
+        let(:params) { {
+          :types        => 'postgresql',
+          :dbname       => true,
+          :storage_type => 'local',
+          :path         => '/backups',
+        } }
+        it { expect { is_expected.to compile }.to raise_error(/Invalid dbname parameter, must be a string/)}
+      end
+      context 'with bad skip tables' do
+        let(:params) { {
+          :types        => 'postgresql',
+          :storage_type => 'local',
+          :dbname       => 'test',
+          :path         => '/backups',
+          :skip_tables  => { 'a' => 'b' },
+        } }
+        it { expect { is_expected.to compile }.to raise_error(/Tables to skip in backup for MySQL & PostreSQL must be a string or array if defined/) }
+      end
+    end # postgresql
 
     context 'generic storage' do
       context 'bad storage type' do
@@ -954,6 +985,50 @@ describe 'backup::job', :types=> :define do
         it { should contain_concat__fragment('job1_mysql').with(:content => /db\.skip_tables\s+=\s+\['log_table', 'temp_table'\]/) }
       end
     end # mysql
+
+    context 'postgresql' do
+      context 'minimal config' do
+        let(:params) { {
+          :types          => 'postgresql',
+          :storage_type   => 'local',
+          :path           => '/backups'
+        } }
+        it { should_not contain_concat__fragment('job1_postgresql').with(:content => /db.name\s+=\s+"mydb"/) }
+        it { should_not contain_concat__fragment('job1_postgresql').with(:content => /db\.username/) }
+        it { should_not contain_concat__fragment('job1_postgresql').with(:content => /db\.password/) }
+        it { should_not contain_concat__fragment('job1_postgresql').with(:content => /db\.port/) }
+        it { should_not contain_concat__fragment('job1_postgresql').with(:content => /db\.skip_tables/) }
+      end
+
+      context 'with u:p, host, port, dbname' do
+        let(:params) { {
+          :types          => 'postgresql',
+          :dbname         => 'mydb',
+          :username       => 'foo',
+          :password       => 'mypass',
+          :port           => 1234,
+          :skip_tables    => 'log_table',
+          :storage_type   => 'local',
+          :path           => '/backups'
+        } }
+        it { should contain_concat__fragment('job1_postgresql').with(:content => /db\.name\s+=\s+"mydb"/) }
+        it { should contain_concat__fragment('job1_postgresql').with(:content => /db\.host\s+=\s+"localhost"/) }
+        it { should contain_concat__fragment('job1_postgresql').with(:content => /db\.username\s+=\s+"foo"/) }
+        it { should contain_concat__fragment('job1_postgresql').with(:content => /db\.password\s+=\s+"mypass"/) }
+        it { should contain_concat__fragment('job1_postgresql').with(:content => /db\.port\s+=\s+"1234"/) }
+        it { should contain_concat__fragment('job1_postgresql').with(:content => /db\.skip_tables\s+=\s+\['log_table'\]/) }
+      end
+
+      context 'array of skipped tables' do
+        let(:params) { {
+          :types          => 'postgresql',
+          :skip_tables    => ['log_table', 'temp_table'],
+          :storage_type   => 'local',
+          :path           => '/backups'
+        } }
+        it { should contain_concat__fragment('job1_postgresql').with(:content => /db\.skip_tables\s+=\s+\['log_table', 'temp_table'\]/) }
+      end
+    end # postsql
 
     context 'riak' do
       context 'default node and cookie' do
